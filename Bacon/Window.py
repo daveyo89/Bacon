@@ -1,27 +1,33 @@
-from Bacon.Cypher import BaconSpider, DecodeBaconSpider
 import tkinter as tk
 from tkinter import messagebox, ttk
+
+from Bacon.Cypher import BaconSpider, DecodeBaconSpider
 
 
 class Window:
 
     def __init__(self):
         self.master = tk.Tk()
-        self.master.maxsize(width=1420, height=400)
+        self._geom = '1426x400+100+0'
         self.container = ttk.Frame(self.master)
         self.canvas = tk.Canvas(self.container, width=400, height=400)
         self.scrollbar = ttk.Scrollbar(self.container, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
-        self.secret_message = "jovo penteken remelem tali jelszo eredet"
+        self.secret_message = ""
         self.canvas.bind(
             "<Configure>",
             lambda e: self.canvas.configure(
                 scrollregion=self.scrollable_frame.bbox("all")
             )
         )
-
+        pad = 3
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.master.geometry("{0}x{1}+0+0".format(
+            self.master.winfo_screenwidth() - pad, self.master.winfo_screenheight() - pad))
+
+        self.master.bind('<Control-space>', self.toggle_geom)
 
         self.app_ui_buttons()
         self.secret_message_box()
@@ -36,15 +42,13 @@ class Window:
         self.master.iconbitmap("icon.ico")
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.master.bind('<Escape>', func=lambda e: self.master.destroy())
-        self.master.bind('<Control-s>', func=lambda e: self.send_mail())
+        self.master.bind('<Control-s>', func=lambda e: self.secret_message_box())
         self.master.mainloop()
 
     def app_ui_buttons(self):
         fr_buttons = tk.Frame(self.scrollable_frame, relief=tk.RAISED, bd=3)
         btn_load = tk.Button(fr_buttons, text="Load", command=self.get_input)
-        btn_send_mail = tk.Button(fr_buttons, text="Secret Message", command=self.secret_message_box)
-
-
+        btn_add_secret_message = tk.Button(fr_buttons, text="Secret Message", command=self.secret_message_box)
 
         setattr(self, 'checkCmd', tk.IntVar())
         self.checkCmd.set(0)
@@ -53,7 +57,7 @@ class Window:
 
         btn_load.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
         btn_function.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
-        btn_send_mail.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
+        btn_add_secret_message.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
         fr_buttons.grid(row=0, column=0, sticky="ns")
 
     def hide(self):
@@ -62,7 +66,6 @@ class Window:
     def show(self):
         self.master.update()
         self.master.deiconify()
-
 
     def get_input(self):
         setattr(self, 'message', [])
@@ -86,10 +89,13 @@ class Window:
             return dbs.translate_result
 
     def secret_message_box(self):
+        if hasattr(self, 'recipient'):
+            self.recipient.destroy()
+
         def check():
-            email_input = self.add_secret_message.get()
-            if email_input:
-                setattr(self, 'secret_message', email_input)
+            secret_message_input = self.add_secret_message.get()
+            if secret_message_input:
+                setattr(self, 'secret_message', secret_message_input)
                 self.recipient.destroy()
 
         setattr(self, 'recipient', tk.Toplevel(width=100, height=100))
@@ -103,9 +109,7 @@ class Window:
 
         b = ttk.Button(self.recipient, text="Okay", command=check)
         b.grid(row=1, column=0)
-
-        # setattr(self, 'secret_message_box', tk.Label(self.scrollable_frame, relief=tk.RAISED, bd=3))
-        # self.secret_message_box.grid(row=0, column=3, sticky="ewns")
+        self.recipient.bind('<Enter>', func=lambda e: check())
 
     def text_box(self):
         setattr(self, 'text_box', tk.Text(self.scrollable_frame, relief=tk.RAISED, bd=3))
@@ -114,6 +118,11 @@ class Window:
     def result_box(self):
         setattr(self, 'result_box', tk.Text(self.scrollable_frame, state="normal", relief=tk.RAISED, bd=3))
         self.result_box.grid(row=0, column=2, sticky="ewns")
+
+    def toggle_geom(self, event):
+        geom = self.master.winfo_geometry()
+        self.master.geometry(self._geom)
+        self._geom = geom
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):

@@ -10,12 +10,11 @@ if exist %systemdrive%%homepath%\Cypher\Cypher.exe (
         choco install -y python3
     )
     python --version
-    python3 -m venv .\venv
+    python -m venv .\venv
     call .\venv\Scripts\activate.bat
     call pip install -r requirements.txt
-    pyinstaller --name Cypher --console --onefile --clean --distpath %systemdrive%%homepath%\Cypher --icon icon.ico  --windowed main.py
+    python -O -m PyInstaller  --name Cypher --console --onefile --clean --distpath %systemdrive%%homepath%\Cypher --icon icon.ico  --windowed main.py
     copy icon.ico %systemdrive%%homepath%\Cypher\
-    copy config.yml %systemdrive%%homepath%\Cypher\
     rd /s/q "build"
     rd /s/q "__pycache__"
     del Cypher.spec

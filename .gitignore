@@ -140,3 +140,5 @@ dmypy.json
 cython_debug/
 
 /Bacon/versike
+!/Bacon/requirements.txt
+Bacon/requirements.txt
